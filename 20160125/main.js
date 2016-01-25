@@ -1,44 +1,47 @@
-var renderer = PIXI.autoDetectRenderer(800, 600);
-document.body.appendChild(renderer.view);
+var ivobos_20160125_main = (function() {
+    var renderer = PIXI.autoDetectRenderer(800, 600);
 
-// create the root of the scene graph
-var stage = new PIXI.Container();
+    document.body.appendChild(renderer.view);
 
-// create a texture from an image path
-var texture = PIXI.Texture.fromImage('tile.png');
+    var stage = new PIXI.Container();
 
-var playerTexture = PIXI.Texture.fromImage('players.png');
+    PIXI.loader
+        .add("tile.png")
+        .add("players.png")
+        .load(setup);
 
-/* create a tiling sprite ...
- * requires a texture, a width and a height
- * in WebGL the image size should preferably be a power of two
- */
-var tilingSprite = new PIXI.extras.TilingSprite(texture, renderer.width, renderer.height);
-var bunny = new PIXI.Sprite(playerTexture);
+    var tileSprite;
+    var playerSprite;
+    var count = 0;
 
-stage.addChild(tilingSprite);
-stage.addChild(bunny);
+    function setup() {
+        var tileTexture = PIXI.loader.resources["tile.png"].texture;
+        var playerTexture = PIXI.loader.resources["players.png"].texture;
+        tileSprite = new PIXI.extras.TilingSprite(tileTexture, renderer.width, renderer.height);
+        playerSprite = new PIXI.Sprite(playerTexture);
+        stage.addChild(tileSprite);
+        stage.addChild(playerSprite);
+        animate();
+    }
 
-var count = 0;
+    function animate() {
 
-animate();
+        count += 0.005;
 
-function animate() {
+        tileSprite.tileScale.x = 1 + Math.sin(count) / 10;
+        tileSprite.tileScale.y = 1 + Math.sin(count) / 10;
 
-    count += 0.005;
+        tileSprite.tilePosition.x = 100 * Math.sin(count);
+        tileSprite.tilePosition.y = 100 * count;
 
-    tilingSprite.tileScale.x = 1 + Math.sin(count) / 10;
-    tilingSprite.tileScale.y = 1 + Math.sin(count) / 10;
+        playerSprite.position.x = renderer.width / 2 - Math.sin(count) * 100;
+        playerSprite.position.y = renderer.height / 2 - Math.cos(count) * 100;
 
-    tilingSprite.tilePosition.x = 100 * Math.sin(count);
-    tilingSprite.tilePosition.y = 100 * count;
+        // render the root container
+        renderer.render(stage);
 
-    bunny.position.x = renderer.width / 2 - Math.sin(count) * 100;
-    bunny.position.y = renderer.height / 2 - Math.cos(count) * 100;
+        requestAnimationFrame(animate);
+    }
+})();
 
-
-    // render the root container
-    renderer.render(stage);
-
-    requestAnimationFrame(animate);
-}
+ivobos_20160125_main();

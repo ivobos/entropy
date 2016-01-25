@@ -42,6 +42,7 @@ var ivobos_20160125_main = (function() {
 
         requestAnimationFrame(animate);
     }
+
+    return {};
 })();
 
-ivobos_20160125_main();

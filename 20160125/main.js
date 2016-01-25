@@ -7,7 +7,7 @@ var ivobos_20160125_main = (function() {
 
     PIXI.loader
         .add("tile.png")
-        .add("players.png")
+        .add("player.png")
         .load(setup);
 
     var tileSprite;
@@ -16,7 +16,7 @@ var ivobos_20160125_main = (function() {
 
     function setup() {
         var tileTexture = PIXI.loader.resources["tile.png"].texture;
-        var playerTexture = PIXI.loader.resources["players.png"].texture;
+        var playerTexture = PIXI.loader.resources["player.png"].texture;
         tileSprite = new PIXI.extras.TilingSprite(tileTexture, renderer.width, renderer.height);
         playerSprite = new PIXI.Sprite(playerTexture);
         stage.addChild(tileSprite);

@@ -1,6 +1,6 @@
 // You can use either `new PIXI.WebGLRenderer`, `new PIXI.CanvasRenderer`, or `PIXI.autoDetectRenderer`
 // which will try to choose the best renderer for the environment you are in.
-var renderer = new PIXI.WebGLRenderer(800, 600);
+var renderer = new PIXI.autoDetectRenderer(800, 600);
 
 // The renderer will create a canvas element for you that you can then insert into the DOM.
 document.body.appendChild(renderer.view);

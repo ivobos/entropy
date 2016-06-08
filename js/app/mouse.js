@@ -28,6 +28,7 @@ define(['exports', './scene', './keyboard', './voxels'], function(exports, scene
         }
     };
     exports.onDocumentMouseDown = function ( event ) {
+        console.log("mouse mouse down");
         event.preventDefault();
         this.lastChangedTime = new Date().getTime();
         var intersects = scene.getIntersects(event.clientX, event.clientY);

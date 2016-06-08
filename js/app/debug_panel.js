@@ -1,17 +1,20 @@
-define(['exports'], function(exports) {
+define(['exports', "./container"], function(exports, container) {
     exports.initEarly = function() {
         this.info = document.createElement( 'div' );
         this.info.style.position = 'absolute';
         this.info.style.left = '0';
         this.info.style.right = '0';
-        this.info.style.top = '0';
+        this.info.style.bottom = '0';
         this.info.style.textAlign = 'center';
         this.info.style.border = '3px ridge #d7de99';
         this.info.style.backgroundColor = 'rgba(183, 172, 78, 0.71)';
-        this.info.style.display = 'block';
+        this.info.style.display = 'none';
         this.info.style.fontSize = '8px';
         this.setDebug("instructions", "Toggle with F3");
         document.addEventListener('keydown', this.toggleInfo.bind(this));
+    };
+    exports.initLate = function() {
+        container.get().appendChild(this.getDiv());
     };
     exports.getDiv = function() {
         return this.info;

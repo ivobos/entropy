@@ -10,6 +10,7 @@ define(['exports', './debug_panel', './camera', './voxels', './scene', './keyboa
         this.center.name = "center";
     };
     exports.initLate = function() {
+        this.setPosition(new THREE.Vector3());
         scene.addNonSolid(this.center);
     };
     exports.setPosition = function(vector3) {

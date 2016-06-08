@@ -1,4 +1,4 @@
-define(['exports', '../lib/three', './center', './dev_orientation', './debug_panel', './mouse', './scene'],
+define(['exports', '../kernel/lib/three', './center', './dev_orientation', './debug_panel', './mouse', './scene'],
     function (exports, three, center, dev_orientation, debug_panel, mouse, scene) {
     var debug_camera = false;
     exports.initEarly = function() {
@@ -7,6 +7,7 @@ define(['exports', '../lib/three', './center', './dev_orientation', './debug_pan
         this.camera.position.set( 500, 800, 1300 );
         this.camera.lookAt( new THREE.Vector3() );
         if (debug_camera) this.debugCamera = new THREE.AxisHelper(20);
+        window.addEventListener( 'resize', this.onWindowResize.bind(this), false );
     };
     exports.initLate = function() {
         if (debug_camera) scene.addNonSolid(this.debugCamera);

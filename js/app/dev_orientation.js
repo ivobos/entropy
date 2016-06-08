@@ -1,4 +1,4 @@
-define(['exports','../lib/three','./camera','./debug_panel'], function(exports, three, camera, debug_panel) {
+define(['exports','../kernel/lib/three','./camera','./debug_panel'], function(exports, three, camera, debug_panel) {
     exports.initEarly = function() {
         this.alphaRads = 0;
         this.betaRads = 45 * Math.PI / 180;

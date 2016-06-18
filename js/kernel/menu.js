@@ -1,12 +1,12 @@
 define(["exports", "./apps"], function(exports, apps) {
-    exports.initEarly = function() {
+    exports.onLoad = function() {
         var menu = document.createElement( 'div' );
         menu.style.position = 'fixed';
         menu.style.left = '50%';
         menu.style.top = '50%';
         menu.style.backgroundColor = 'rgba(183, 172, 78, 0.0)';
         menu.style.transform = 'translate(-50%,-50%)';
-        menu.style.display = 'block';
+        menu.style.display = 'none';
         this.menu = menu;
         this.onKeyDownCallback = this.onKeyDown.bind(this);
     };

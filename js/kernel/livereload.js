@@ -1,5 +1,5 @@
 define(["exports","./modules"], function(exports, modules) {
-    exports.initEarly = function() {
+    exports.onLoad = function() {
         this.reloadStrategy = "reload_page";
     };
     exports.onEnable = function() {

@@ -1,5 +1,5 @@
-define(['exports','./lib/stats'], function(exports, lib_stats) {
-    exports.initEarly = function() {
+define(['exports','kernel/lib/stats'], function(exports, lib_stats) {
+    exports.onLoad = function() {
         // add performance stats
         this.stats = new Stats();
         this.currentPanel = 0;

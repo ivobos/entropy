@@ -5,10 +5,10 @@
  * - enabled flag - modules start disabled, and are enabled in modules.enableModules(context)
  * - pending flag - indicates whether the module has loaded yet or not
  * App Launcher modules have
- * - run method that is called to load and run an app
- * - stop method that is called to stop and unload an app
+ * - launchApp method that is called to load and run an app
+ * - endApp method that is called to stop and unload an app
  * App modules have
- * - module.initEarly method called from modules.initModules(context)
+ * - module.onLoad method called from modules.initModules(context)
  * - module.initLate method called from modules.enableModules(context) before enableModule
  * - module.onEnable method called from modules.enableModules(context) after initLate
  *                   or when modules.enableModule(moduleKey)
@@ -20,14 +20,27 @@
  *                          not called when app is paused or module is disabled
  * - module.beforeRenderLate method - called to render the module content, called 0-60 times a second
  *                          not called when app is paused or module is disabled
- * Module lifecycle
+ * - module.onRender method - called to perform rendering
+ * Module lifecycle states
  *  - not loaded - module doesn't exist
  *  - loading/pending - module has been added via modules.requestModuleLoad
- *  - loaded but unitialised - module is loaded but waiting for other modules to load
- *  - initialised/disabled - the module was initialised via modules.initModules(context) and may have been disabled via modules.disableModule(moduleKey)
- *      - disable modules should not be added to the DOM, should not have DOM event handles added and some of their rendering lifecycle methods will not be called
- *  - enabled - the module was enabled via modules.enableModules(context) or via modules.enableModule(moduleKey)
- *      - enabled modules will have components and event handlers added to DOM and their rendering lifecycle methods will be called
+ *  - loaded but uninitialised - module is loaded but waiting for other modules to load
+ *  - onLoad method called after the module is loaded
+ *      - do not rely on dependent modules being in correct state
+ *  - initialize/initLate - once off module initialisation
+ *      - can rely on other modules having executed onLoad
+ *      - should add our elements to other modules
+ *  - onEnable - the module was enabled, can rely on initLate/init of dependent modules being called
+ *      - this is the moment when the module can add it's elements and handlers to DOM
+ *      - rendering lifecycle methods will be called after this
+ *  - onDisable - the module is being disabled
+ *      - this is the moment when the module must remove it's elements and handlers from DOM
+ *      - rendering lifecycle methods will NOT be called after this
+ *  - terminate - undo the setup done in initialize
+ *      - remove our data from other modules
+ *      - dependent modules have all been disabled, may or may not have been terminated, have NOT been unloaded
+ *  - onUnload method called before the module is unloaded
+ *      - do not rely on dependent modules being in correct state
  */
 define(['exports'], function(exports) {
     exports.init = function() {
@@ -48,6 +61,7 @@ define(['exports'], function(exports) {
             console.log("loaded "+moduleKey);
             this.modules[moduleKey].module = newmodule;
             this.modules[moduleKey].pending = false;
+            this.callModuleMethod(moduleKey, "onLoad");
             this.callDoneIfReady();
         }.bind(this));
     };
@@ -82,10 +96,9 @@ define(['exports'], function(exports) {
     };
     exports.initModules = function(contextKey) {
         console.log("initing modules for "+contextKey);
-        this.forAllContextModulesCallMethod(contextKey, "initEarly");
+        this.forAllContextModulesCallMethod(contextKey, "initLate");
     };
     exports.enableModules = function(contextKey) {
-        this.forAllContextModulesCallMethod(contextKey, "initLate");
         for (var moduleKey in this.modules) {
             if (this.modules[moduleKey].context === contextKey) {
                 this.enableModule(moduleKey);
@@ -148,6 +161,21 @@ define(['exports'], function(exports) {
             }
         }
     };
+    exports.callModuleMethodsWithData = function(getDataMethodName, processDataMethodName) {
+        var data = [];
+        for (var moduleKey in this.modules) {
+            var module = this.modules[moduleKey].module;
+            if (module && typeof module[getDataMethodName] === 'function') {
+                data = data.concat(module[getDataMethodName]());
+            }
+        }
+        for (var moduleKey in this.modules) {
+            var module = this.modules[moduleKey].module;
+            if (module && typeof module[processDataMethodName] === 'function') {
+                module[processDataMethodName](data);
+            }
+        }
+    };
     exports.callModuleMethod = function(moduleKey, methodName) {
         var module = this.modules[moduleKey].module;
         if (module && typeof module[methodName] === 'function') {
@@ -175,7 +203,7 @@ define(['exports'], function(exports) {
             require([modname], function(newmodule) {
                 console.log("loaded "+modname);
                 this.modules[modname].module = newmodule;
-                this.callModuleMethod(modname, "initEarly");
+                this.callModuleMethod(modname, "onLoad");
                 this.callModuleMethod(modname, "initLate");
                 if (enabled) {
                     this.enableModule(modname);

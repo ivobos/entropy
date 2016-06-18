@@ -1,6 +1,7 @@
 define(["exports", "./modules"], function(exports, modules) {
-    exports.initEarly = function() {
+    exports.onLoad = function() {
         this.apps = {};
+        this.add("PONG", "apps/pong/launcher");
         this.add("Entropy", "apps/entropy/launcher");
         this.add("Voxels", "apps/voxels/loader");
         this.currentApp = null;
@@ -24,11 +25,11 @@ define(["exports", "./modules"], function(exports, modules) {
     exports.runApp = function(appName) {
         // stop currently running app
         if (this.currentApp) {
-            modules.callModuleMethod(this.apps[this.currentApp].loader, "stop");
+            modules.callModuleMethod(this.apps[this.currentApp].loader, "endApp");
         }
         // Now start new app
         modules.requestModuleLoadAndCallbackOnDone(this.apps[appName].loader, "launcher", function() {
-            modules.callModuleMethod(this.apps[appName].loader, "run");
+            modules.callModuleMethod(this.apps[appName].loader, "launchApp");
             this.currentApp = appName;
         }.bind(this));
     };

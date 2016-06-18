@@ -3,7 +3,7 @@ define(["exports", "kernel/modules"], function(exports, modules) {
     var moduleNames = [
         'apps/entropy/threejs_canvas_geometry_hierarchy'
     ];
-    exports.run = function() {
+    exports.launchApp = function() {
        console.log("launching "+appKey);
        for (var i = 0, len = moduleNames.length; i < len; i++) {
            modules.requestModuleLoad(moduleNames[i], appKey);
@@ -13,7 +13,7 @@ define(["exports", "kernel/modules"], function(exports, modules) {
            modules.enableModules(appKey);
        });
     };
-    exports.stop = function() {
+    exports.endApp = function() {
         console.log("stopping "+appKey);
         modules.disableModules(appKey);
     };

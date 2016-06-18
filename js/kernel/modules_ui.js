@@ -1,5 +1,5 @@
 define(["exports", "./modules"], function(exports, modules) {
-    exports.initEarly = function() {
+    exports.onLoad = function() {
         this.info = document.createElement( 'div' );
         this.info.style.position = 'absolute';
         this.info.style.right = '0';
@@ -10,10 +10,12 @@ define(["exports", "./modules"], function(exports, modules) {
         this.info.style.display = 'none';
         this.info.style.fontSize = '8px';
         this.info.appendChild(this.createTextLine("Toggle with F4"));
-        document.addEventListener('keydown', this.toggleModUi.bind(this));
+    };
+    exports.initLate = function() {
         modules.addChangeListener(this.onModulesChange.bind(this));
     };
     exports.onEnable = function() {
+        document.addEventListener('keydown', this.toggleModUi.bind(this));
         document.body.appendChild(this.info);
         this.updateContent();
     };

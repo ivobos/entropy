@@ -1,3 +1,7 @@
+requirejs.config({
+    // bust browser caching, see http://stackoverflow.com/questions/8315088/prevent-requirejs-from-caching-required-scripts
+    urlArgs: "bust=v0.0.6"
+});
 requirejs(['kernel/lib/three', 'kernel/modules'], function(three, modules) {
     var appKey = "kernel";
     var moduleConfig = {

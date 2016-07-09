@@ -1,7 +1,7 @@
 define(["exports", "./scene"], function(exports, scene) {
     exports.onLoad = function() {
     };
-    exports.initLate = function() {
+    exports.init = function() {
         // Lights
         var ambientLight = new THREE.AmbientLight( 0x606060 );
         scene.addNonSolid( ambientLight);

@@ -10,7 +10,7 @@ define(["exports", "./apps"], function(exports, apps) {
         this.menu = menu;
         this.onKeyDownCallback = this.onKeyDown.bind(this);
     };
-    exports.initLate = function() {
+    exports.init = function() {
         var appNames = apps.getAppNames();
         for (var i = 0; i < appNames.length; i++) {
             var appName = appNames[i];

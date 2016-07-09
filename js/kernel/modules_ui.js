@@ -4,52 +4,117 @@ define(["exports", "./modules"], function(exports, modules) {
         this.info.style.position = 'absolute';
         this.info.style.right = '0';
         this.info.style.top = '0';
-        this.info.style.textAlign = 'left';
-        this.info.style.border = '3px ridge #d7de99';
-        this.info.style.backgroundColor = 'rgba(83, 172, 78, 0.71)';
+        this.info.style.backgroundColor = 'rgba(245, 245, 245, 0.71)';
+        this.info.style.backgroundImage = 'None'; // remove bg image to allow transparency
         this.info.style.display = 'none';
         this.info.style.fontSize = '8px';
+        this.info.className = "container well well-sm";
         this.info.appendChild(this.createTextLine("Toggle with F4"));
     };
-    exports.initLate = function() {
-        modules.addChangeListener(this.onModulesChange.bind(this));
+    exports.init = function() {
     };
     exports.onEnable = function() {
         document.addEventListener('keydown', this.toggleModUi.bind(this));
         document.body.appendChild(this.info);
-        this.updateContent();
+        modules.addChangeListener(this.onModulesChange.bind(this));
+        this.createOrUpdateModuleTable();
     };
-    exports.updateContent = function() {
+    this.onModulesChange = function(event) {
+        this.createOrUpdateModuleTable();
+    };
+    exports.createOrUpdateModuleTable = function() {
+        var id = "module_table_body";
+        var tbody = document.getElementById(id);
+        if (!tbody) {
+            var table = document.createElement('table');
+            table.className = "table table-condensed table-hover";
+            table.appendChild(this.createTableHeader());
+            tbody = document.createElement('tbody');
+            tbody.id = id;
+            table.appendChild(tbody);
+            this.info.appendChild(table);
+        }
         var moduleKeys = modules.getModuleNames();
         for (var i = 0, len = moduleKeys.length; i < len; i++) {
             var moduleKey = moduleKeys[i];
-            var moduleEntry = this.getModuleEntry(moduleKey);
-            if (!moduleEntry) {
-                moduleEntry = this.createModuleEntry(moduleKey);
-                this.info.appendChild(moduleEntry);
-            }
+            this.createOrUpdateModuleEntry(tbody, moduleKey);
         }
     };
-    this.onModulesChange = function(event) {
-        if (event.function === "enable" || event.function === "disable") {
-            this.updateButtonDisplayState(event.module, "disable");
-            this.updateButtonDisplayState(event.module, "enable");
-            this.updateButtonDisplayState(event.module, "reload");
+    exports.createTableHeader = function() {
+        var cols = ["App","Module","Enabled","Controls"];
+        var thead = document.createElement('thead');
+        var tr = document.createElement('tr');
+        for (var i = 0; i < cols.length; i++) {
+            th = document.createElement('th');
+            th.innerHTML = cols[i];
+            tr.appendChild(th);
         }
+        thead.appendChild(tr);
+        return thead;
     };
-    exports.getModuleEntryId = function(moduleKey) {
-        return "module_"+moduleKey;
-    }
-    exports.getModuleEntry = function(moduleKey) {
-        return document.getElementById(this.getModuleEntryId(moduleKey));
+    exports.createOrUpdateModuleEntry = function(parent, moduleKey) {
+        var moduleEntryId = "module_"+moduleKey;
+        var moduleEntry = document.getElementById(moduleEntryId);
+        if (!moduleEntry) {
+            moduleEntry = document.createElement('tr');
+            moduleEntry.id = moduleEntryId;
+            parent.appendChild(moduleEntry);
+        }
+        this.createOrUpdateModuleContextInfo(moduleEntry, moduleKey);
+        this.createOrUpdateModuleName(moduleEntry, moduleKey);
+        this.createOrUpdateModuleEnabled(moduleEntry, moduleKey);
+        this.createOrUpdateButtons(moduleEntry, moduleKey);
     };
-    exports.createModuleEntry = function(moduleKey) {
-        var line = this.createTextLine(moduleKey);
-        line.id = this.getModuleEntryId(moduleKey);
-        line.appendChild(this.createButton("disable", moduleKey));
-        line.appendChild(this.createButton("reload", moduleKey));
-        line.appendChild(this.createButton("enable", moduleKey));
-        return line;
+    exports.createOrUpdateModuleContextInfo = function(parent, moduleKey) {
+        var contextInfoId = "module_"+moduleKey+"_context_info";
+        var contextInfo = document.getElementById(contextInfoId);
+        if (!contextInfo) {
+            contextInfo = document.createElement('td');
+            contextInfo.id = contextInfoId;
+            parent.appendChild(contextInfo);
+        }
+        var moduleState = modules.getModuleState(moduleKey);
+        contextInfo.innerHTML = moduleState.context;
+    };
+    exports.createOrUpdateModuleName = function(parent, moduleKey) {
+        var id = "module_"+moduleKey+"_name";
+        var div = document.getElementById(id);
+        if (!div) {
+            div = document.createElement('td');
+            div.id = id;
+            parent.appendChild(div);
+        }
+        div.innerHTML = moduleKey;
+    };
+    exports.createOrUpdateModuleEnabled = function(parent, moduleKey) {
+        var id = "module_"+moduleKey+"_enabled";
+        var div = document.getElementById(id);
+        if (!div) {
+            div = document.createElement('td');
+            div.id = id;
+            parent.appendChild(div);
+        }
+        var moduleState = modules.getModuleState(moduleKey);
+        div.innerHTML = moduleState.enabled ? "enabled" : "disabled";
+    };
+    exports.createOrUpdateButtons = function(parent, moduleKey) {
+        var id = "module_"+moduleKey+"_buttons";
+        var div = document.getElementById(id);
+        if (!div) {
+            div = document.createElement('td');
+            div.id = id;
+            this.createButtons(div, moduleKey);
+            parent.appendChild(div);
+        }
+        this.updateButtonDisplayState(moduleKey, "disable");
+        this.updateButtonDisplayState(moduleKey, "enable");
+        this.updateButtonDisplayState(moduleKey, "reload");
+    };
+    // module enable/disable/reload buttons
+    exports.createButtons = function(parent, moduleKey) {
+        parent.appendChild(this.createButton("disable", moduleKey));
+        parent.appendChild(this.createButton("reload", moduleKey));
+        parent.appendChild(this.createButton("enable", moduleKey));
     };
     exports.createButton = function(buttonKey, moduleKey) {
         var title;
@@ -106,68 +171,8 @@ define(["exports", "./modules"], function(exports, modules) {
             button.style.display = this.getButtonDisplay(moduleKey, buttonKey);
         }
     };
-    //exports.createOrUpdateModuleEntry = function(moduleName) {
-    //    var id = "module_"+moduleName;
-    //    var line = document.getElementById(id);
-    //    if (!line) {
-    //        var line = this.createTextLine(moduleName);
-    //        line.id = id;
-    //        this.info.appendChild(line);
-    //    }
-    //    // button
-    //    this.createOrUpdateModuleButton(moduleName, "disable1", "Disable", !modules.canDisableModule(moduleName), this.createDisableCallback(moduleName))
-    //    // disable module button
-    //    var disableModuleButton = this.createButton("disable", this.createDisableCallback(moduleName));
-    //    disableModuleButton.id = "module_disable_"+moduleName;
-    //    line.appendChild(disableModuleButton);
-    //    this.updateDisableModuleButton(moduleName);
-    //    // reload module button
-    //    var reloadModuleButton = this.createButton("reload", this.createReloadCallback(moduleName));
-    //    reloadModuleButton.id = "module_reload_"+moduleName;
-    //    line.appendChild(reloadModuleButton);
-    //    if (!modules.canReloadModule(moduleName)) {
-    //        reloadModuleButton.style.display = "none";
-    //    }
-    //    // enable module button
-    //    var enableModuleButton = this.createButton("enable", this.createEnableCallback(moduleName));
-    //    enableModuleButton.id = "module_enable_"+moduleName;
-    //    line.appendChild(enableModuleButton);
-    //    this.updateEnableModuleButton(moduleName);
-    //};
-    //exports.createOrUpdateModuleButton = function(moduleName, buttonKey, buttonName, enabled, callback) {
-    //    var buttonId = "module_"+buttonKey+"_"+moduleName;
-    //    var button = document.getElementById(buttonId);
-    //    if (!button) {
-    //        var lineId = "module_"+moduleName;
-    //        var line = document.getElementById(lineId);
-    //
-    //    }
-    //};
-    //exports.updateDisableModuleButton = function(moduleName) {
-    //    var id = "module_disable_"+moduleName;
-    //    var button = document.getElementById(id);
-    //    if (button) {
-    //        if (!modules.canDisableModule(moduleName)) {
-    //            button.style.display = "none";
-    //        } else {
-    //            button.style.display = "inline";
-    //        }
-    //    }
-    //};
-    //exports.updateEnableModuleButton = function(moduleName) {
-    //    var id = "module_enable_"+moduleName;
-    //    var button = document.getElementById(id);
-    //    if (button) {
-    //        if (!modules.canEnableModule(moduleName)) {
-    //            button.style.display = "none";
-    //        } else {
-    //            button.style.display = "inline";
-    //        }
-    //    }
-    //};
     exports.createEnableCallback = function(key) {
         return function(event) {
-            console.log("modules ui click");
             event.stopPropagation();
             modules.enableModule(key);
         }
@@ -180,7 +185,6 @@ define(["exports", "./modules"], function(exports, modules) {
     };
     exports.createDisableCallback = function(key) {
         return function(event) {
-            console.log("modules ui click");
             event.stopPropagation();
             modules.disableModule(key);
         }
@@ -198,11 +202,4 @@ define(["exports", "./modules"], function(exports, modules) {
         line.innerHTML = text;
         return line;
     };
-    //exports.createButton = function(title, callback) {
-    //    var button = document.createElement("input");
-    //    button.type = "button";
-    //    button.value = title;
-    //    button.addEventListener( 'mousedown', callback, false );
-    //    return button;
-    //}
 });

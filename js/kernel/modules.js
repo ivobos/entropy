@@ -9,8 +9,8 @@
  * - endApp method that is called to stop and unload an app
  * App modules have
  * - module.onLoad method called from modules.initModules(context)
- * - module.initLate method called from modules.enableModules(context) before enableModule
- * - module.onEnable method called from modules.enableModules(context) after initLate
+ * - module.init method called from modules.enableModules(context) before enableModule
+ * - module.onEnable method called from modules.enableModules(context) after init
  *                   or when modules.enableModule(moduleKey)
  * - module.onDisable method called from modules.disableModule(moduleKey), if this method is absent a module can't be disabled
  * - module.onReload method called from modules.reloadModule(moduleKey), if this method is absent a module can't be reloaded
@@ -27,10 +27,10 @@
  *  - loaded but uninitialised - module is loaded but waiting for other modules to load
  *  - onLoad method called after the module is loaded
  *      - do not rely on dependent modules being in correct state
- *  - initialize/initLate - once off module initialisation
+ *  - init - once off module initialisation
  *      - can rely on other modules having executed onLoad
  *      - should add our elements to other modules
- *  - onEnable - the module was enabled, can rely on initLate/init of dependent modules being called
+ *  - onEnable - the module was enabled, can rely on init of dependent modules being called
  *      - this is the moment when the module can add it's elements and handlers to DOM
  *      - rendering lifecycle methods will be called after this
  *  - onDisable - the module is being disabled
@@ -43,9 +43,7 @@
  *      - do not rely on dependent modules being in correct state
  */
 define(['exports'], function(exports) {
-    exports.init = function() {
-       this.modules = {}; // moduleKey -> { module:module, context:context, pending:true/false, enabled: true/false }
-    };
+    exports.modules = {}; // moduleKey -> { module:module, context:context, pending:true/false, enabled: true/false }
     exports.addChangeListener = function(callback) {
         this.changeListener = callback;
     };
@@ -56,9 +54,10 @@ define(['exports'], function(exports) {
             pending: true,
             enabled: false
         };
-        console.log("require "+moduleKey+" url="+require.toUrl(moduleKey+".js"));
+        if (this.changeListener) {
+            this.changeListener({function: "load", module: moduleKey});
+        }
         require([moduleKey], function(newmodule) {
-            console.log("loaded "+moduleKey);
             this.modules[moduleKey].module = newmodule;
             this.modules[moduleKey].pending = false;
             this.callModuleMethod(moduleKey, "onLoad");
@@ -72,11 +71,13 @@ define(['exports'], function(exports) {
     exports.getModuleNames = function() {
         return Object.keys(this.modules);
     };
+    exports.getModuleState = function(moduleKey) {
+        return this.modules[moduleKey];
+    };
     exports.whenAllModulesLoaded = function(doneCallback) {
         if (this.doneCallback) {
-            ssfdfds;
+            throw "Error! done callback should not be set at this stage";
         }
-        console.log("registering cb="+doneCallback);
         this.doneCallback = doneCallback;
         this.callDoneIfReady();
     };
@@ -87,7 +88,6 @@ define(['exports'], function(exports) {
                 numPending++;
             }
         }
-        console.log("numPending="+numPending+" callback="+this.doneCallback);
         if (numPending === 0 && this.doneCallback) {
             var cb = this.doneCallback;
             this.doneCallback = null;
@@ -95,8 +95,7 @@ define(['exports'], function(exports) {
         }
     };
     exports.initModules = function(contextKey) {
-        console.log("initing modules for "+contextKey);
-        this.forAllContextModulesCallMethod(contextKey, "initLate");
+        this.forAllContextModulesCallMethod(contextKey, "init");
     };
     exports.enableModules = function(contextKey) {
         for (var moduleKey in this.modules) {
@@ -116,19 +115,23 @@ define(['exports'], function(exports) {
         return this.modules[modname] && !this.modules[modname].enabled;
     };
     exports.enableModule = function(modname) {
-        console.log("enable "+modname);
         if (this.canEnableModule(modname)) {
             this.modules[modname].enabled = true;
             var module = this.modules[modname].module;
             if (typeof module["onEnable"] === 'function') {
                 module.onEnable();
             }
-            this.changeListener({function: "enable", module: modname})
+            if (this.changeListener) {
+                this.changeListener({function: "enable", module: modname});
+            }
         }
     };
     exports.canDisableModule = function(modname) {
         var module = this.modules[modname].module;
-        return module && this.modules[modname].enabled && typeof module["onDisable"] === 'function';
+        if (! module || ! this.modules[modname].enabled) return false;
+        var hasOnEnableMethod = typeof module["onEnable"] === 'function';
+        var hasOnDisableMethod = typeof module["onDisable"] === 'function';
+        return hasOnEnableMethod == hasOnDisableMethod;
     };
     exports.disableModule = function(modname) {
         console.log("disable "+modname);
@@ -138,7 +141,9 @@ define(['exports'], function(exports) {
             if (typeof module["onDisable"] === 'function') {
                 module.onDisable();
             }
-            this.changeListener({function: "disable", module: modname})
+            if (this.changeListener) {
+                this.changeListener({function: "disable", module: modname});
+            }
         }
     };
     exports.enableAll = function() {
@@ -161,25 +166,67 @@ define(['exports'], function(exports) {
             }
         }
     };
-    exports.callModuleMethodsWithData = function(getDataMethodName, processDataMethodName) {
-        var data = [];
+    exports.callEnabledModuleMethodsWithData = function(getDataMethodName, processDataMethodName) {
+        var data = this.callEnabledModuleMethod(getDataMethodName);
         for (var moduleKey in this.modules) {
-            var module = this.modules[moduleKey].module;
-            if (module && typeof module[getDataMethodName] === 'function') {
-                data = data.concat(module[getDataMethodName]());
-            }
-        }
-        for (var moduleKey in this.modules) {
+            if (!this.modules[moduleKey].enabled) continue;
             var module = this.modules[moduleKey].module;
             if (module && typeof module[processDataMethodName] === 'function') {
                 module[processDataMethodName](data);
             }
         }
     };
+    exports.callEnabledModuleMethod = function(methodName, args) {
+        var data = null;
+        for (var moduleKey in this.modules) {
+            if (!this.modules[moduleKey].enabled) continue;
+            var module = this.modules[moduleKey].module;
+            if (module && typeof module[methodName] === 'function') {
+                var result = module[methodName](args);
+                data = mergeFunctionResult(data, result);
+            }
+        }
+        return data;
+    };
+    exports.callAppModuleMethod = function(appmodule, methodName) {
+        // find the context for appmodule
+        var context;
+        for (var moduleKey in this.modules) {
+            if (this.modules[moduleKey].module == appmodule) {
+                context = this.modules[moduleKey].context;
+                break;
+            }
+        }
+        var data = null;
+        for (var moduleKey in this.modules) {
+            if (this.modules[moduleKey].context != context) continue;
+            var module = this.modules[moduleKey].module;
+            if (module && typeof module[methodName] === 'function') {
+                var result = module[methodName]();
+                data = mergeFunctionResult(data, result);
+            }
+        }
+        return data;
+    };
+    function mergeFunctionResult(data, result) {
+        if (data === null) {
+            if (result instanceof Array) {
+                data = [];
+            } else if (result instanceof Object) {
+                data = {};
+            }
+        }
+        if (data instanceof Array && result instanceof Array) {
+            data = data.concat(result);
+        } else if (data instanceof Object && result instanceof Object) {
+            for (var x in result) data[x] = result[x];
+        }
+        return data;
+    }
     exports.callModuleMethod = function(moduleKey, methodName) {
         var module = this.modules[moduleKey].module;
         if (module && typeof module[methodName] === 'function') {
-            module[methodName]();
+            return module[methodName]();
         }
     };
     // WARNING: this doesn't reload properly
@@ -204,7 +251,7 @@ define(['exports'], function(exports) {
                 console.log("loaded "+modname);
                 this.modules[modname].module = newmodule;
                 this.callModuleMethod(modname, "onLoad");
-                this.callModuleMethod(modname, "initLate");
+                this.callModuleMethod(modname, "init");
                 if (enabled) {
                     this.enableModule(modname);
                 }

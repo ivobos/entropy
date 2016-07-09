@@ -10,7 +10,7 @@ define(['exports', 'kernel/lib/three', './center', './dev_orientation', './debug
         // TODO move this to onEnable
         window.addEventListener( 'resize', this.onWindowResize.bind(this), false );
     };
-    exports.initLate = function() {
+    exports.init = function() {
         if (debug_camera) scene.addNonSolid(this.debugCamera);
     };
     exports.set = function(cameraVector) {

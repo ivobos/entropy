@@ -1,34 +1,20 @@
-define(['exports', 'kernel/modules'], function(exports, modules) {
-    var appKey = "voxels";
-    var moduleNames = [
-//        'app/dev_accelerometer',
-        "apps/lib/container",
-        'apps/voxels/camera',
-        'apps/voxels/scene',
-        'apps/voxels/avatar/sphere',
-        'apps/voxels/debug_panel',
-        'apps/voxels/center',
-        'apps/voxels/dev_orientation',
-        'apps/voxels/voxels',
-        'apps/voxels/keyboard',
-        'apps/voxels/touch',
-        'apps/voxels/mouse',
-        "apps/voxels/terrain/flat",
-        "apps/voxels/lights",
-        "apps/voxels/renderer"
-    ];
-    exports.launchApp = function() {
-        console.log("launching "+appKey);
-        for (var i = 0, len = moduleNames.length; i < len; i++) {
-            modules.requestModuleLoad(moduleNames[i], appKey);
-        }
-        modules.whenAllModulesLoaded(function() {
-            modules.initModules(appKey);
-            modules.enableModules(appKey);
-
-        });
-    };
-    exports.endApp =  function() {
-        modules.disableModules(appKey);
+define(['exports'], function(exports) {
+    exports.getModuleConfig = function() {
+        return {
+            "apps/lib/container" : { enabled: true},
+            'apps/voxels/camera' : { enabled: true},
+            'apps/voxels/scene' : { enabled: true},
+            'apps/voxels/avatar/sphere' : { enabled: true},
+            'apps/voxels/debug_panel' : { enabled: true},
+            'apps/voxels/center' : { enabled: true},
+            'apps/voxels/dev_orientation' : { enabled: true},
+            'apps/voxels/voxels' : { enabled: true},
+            'apps/voxels/keyboard' : { enabled: true},
+            'apps/voxels/touch' : { enabled: true},
+            'apps/voxels/mouse' : { enabled: true},
+            "apps/voxels/terrain/flat" : { enabled: true},
+            "apps/voxels/lights" : { enabled: true},
+            "apps/voxels/renderer" : { enabled: true}
+        };
     };
 });

@@ -1,13 +1,22 @@
 requirejs(['kernel/lib/three', 'kernel/modules'], function(three, modules) {
-    modules.init();
-    modules.requestModuleLoad("kernel/stats", "kernel");
-    modules.requestModuleLoad("kernel/modules_ui", "kernel");
-    modules.requestModuleLoad("kernel/apps", "kernel");
-    modules.requestModuleLoad("kernel/menu", "kernel");
-    modules.requestModuleLoad("kernel/livereload", "kernel");
+    var appKey = "kernel";
+    var moduleConfig = {
+        "kernel/stats" : { enabled: false},
+        "kernel/modules_ui" : { enabled: true},
+        "kernel/apps" : { enabled: true},
+        "kernel/menu" : { enabled: true},
+        "kernel/livereload" : { enabled: true}
+    };
+    for (var moduleKey in moduleConfig) {
+        modules.requestModuleLoad(moduleKey, appKey);
+    }
     modules.whenAllModulesLoaded(function() {
-        modules.initModules("kernel");
-        modules.enableModules("kernel");
+        modules.initModules(appKey);
+        for (var moduleKey in moduleConfig) {
+            if (moduleConfig[moduleKey].enabled) {
+                modules.enableModule(moduleKey);
+            }
+        }
         modules.callModuleMethod("kernel/apps", "runDefaultApp");
     });
 });

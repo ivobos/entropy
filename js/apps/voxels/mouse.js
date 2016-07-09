@@ -1,5 +1,5 @@
 define(['exports', './scene', './keyboard', './voxels'], function(exports, scene, keyboard, voxels) {
-    exports.initLate = function() {
+    exports.init = function() {
         this.lastChangedTime = 0;
         this.mousePos = new THREE.Vector2();
         var rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );

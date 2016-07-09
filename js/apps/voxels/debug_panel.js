@@ -14,7 +14,7 @@ define(['exports', "apps/lib/container"], function(exports, container) {
         // TODO move to onEnable
         document.addEventListener('keydown', this.toggleInfo.bind(this));
     };
-    exports.initLate = function() {
+    exports.init = function() {
         container.get().appendChild(this.getDiv());
     };
     exports.getDiv = function() {

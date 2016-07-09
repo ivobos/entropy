@@ -1,6 +1,5 @@
 define(['exports'], function(exports) {
-    exports.onLoad = function() {
-    };
+    // this is called from loop.js and the input is all objects collected from modules using getPhysicsData method
     exports.doPhysics = function(data) {
         for (var i = 0; i < data.length; i++) {
             var position = data[i].position;

@@ -9,7 +9,7 @@ define(['exports', './debug_panel', './camera', './voxels', './scene', './keyboa
         this.center = new THREE.AxisHelper( 25 );
         this.center.name = "center";
     };
-    exports.initLate = function() {
+    exports.init = function() {
         this.setPosition(new THREE.Vector3());
         scene.addNonSolid(this.center);
     };

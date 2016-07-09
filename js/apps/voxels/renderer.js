@@ -9,7 +9,7 @@ define(["exports", "apps/lib/container", "kernel/stats", "kernel/modules", "./sc
        window.addEventListener( 'resize', this.onWindowResize.bind(this), false );
 
    };
-   exports.initLate = function() {
+   exports.init = function() {
        container.get().appendChild( this.renderer.domElement );
        requestAnimationFrame( this.render.bind(this) );
    };

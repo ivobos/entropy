@@ -5,7 +5,7 @@ define(['exports', '../scene', "../center"], function(exports, scene, center) {
         this.sphere = new THREE.Mesh( geometry, material );
         this.sphere.translateY(50);
     };
-    exports.initLate = function() {
+    exports.init = function() {
     };
     exports.onEnable = function() {
         scene.addSolid( this.sphere );

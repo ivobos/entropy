@@ -11,7 +11,6 @@ define(["exports","./modules"], function(exports, modules) {
         this.ws.close();
     };
     exports.onOpen = function(event) {
-        console.log("onopen "+event);
         var hello = {
             command: 'hello',
             protocols: ['http://livereload.com/protocols/official-7']
@@ -19,7 +18,6 @@ define(["exports","./modules"], function(exports, modules) {
         this.ws.send(JSON.stringify(hello));
     };
     exports.onMessage = function(event) {
-        console.log("onmessage "+event.data);
         var data = JSON.parse(event.data);
         if (data.command === "reload") {
             if (this.reloadStrategy === "reload_page") {

@@ -1,5 +1,5 @@
 define(['exports','../scene','../center',"../debug_panel"], function(exports, scene, center, debug_panel) {
-   exports.initLate = function() {
+   exports.init = function() {
        var size = 500, step = 50;
        this.block_size = 50;
        this.num_blocks = 40;

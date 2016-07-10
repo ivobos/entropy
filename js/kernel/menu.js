@@ -1,6 +1,10 @@
 define(["exports", "./apps"], function(exports, apps) {
     exports.onLoad = function() {
-        var menu = document.createElement( 'div' );
+        this.toggleMenuCallback = this.toggleMenuEventHandler.bind(this);
+        this.emphesizeButtonCallback = this.emphesizeButton.bind(this);
+        this.deemphesizeButtonCallback = this.deemphesizeButton.bind(this);
+        this.onKeyDownCallback = this.onKeyDown.bind(this);
+        var menu = document.createElement('div');
         menu.style.position = 'fixed';
         menu.style.left = '50%';
         menu.style.top = '50%';
@@ -8,7 +12,18 @@ define(["exports", "./apps"], function(exports, apps) {
         menu.style.transform = 'translate(-50%,-50%)';
         menu.style.display = 'none';
         this.menu = menu;
-        this.onKeyDownCallback = this.onKeyDown.bind(this);
+        var button = document.createElement('img');
+        button.style.position = 'fixed';
+        button.style.right = 0;
+        button.style.top = 0;
+        button.style.opacity = 0.5;
+        button.style.width = "48px";
+        button.src = 'img/kernel/1f365.png';
+        button.addEventListener('click', this.toggleMenuCallback);
+        button.addEventListener('touchstart', this.toggleMenuCallback);
+        button.addEventListener('mouseenter', this.emphesizeButtonCallback);
+        button.addEventListener('mouseleave', this.deemphesizeButtonCallback);
+        this.button = button;
     };
     exports.init = function() {
         var appNames = apps.getAppNames();
@@ -19,19 +34,42 @@ define(["exports", "./apps"], function(exports, apps) {
     };
     exports.onEnable = function() {
         document.body.appendChild(this.menu);
+        document.body.appendChild(this.button);
         document.addEventListener('keydown', this.onKeyDownCallback, false);
     };
     exports.onDisable = function() {
+        document.body.removeChild(this.button);
         document.body.removeChild(this.menu);
         document.removeEventListener('keydown', this.onKeyDownCallback);
     };
     exports.onKeyDown = function(event) {
         if (event.keyCode == 27) {
-            if (this.menu.style.display == 'block')
-                this.menu.style.display = 'none';
-            else
-                this.menu.style.display = 'block';
+            this.toggleMenu();
         }
+    };
+    exports.toggleMenuEventHandler = function(event) {
+        event.preventDefault();
+        if (this.menu.style.display == 'block') {
+            this.hideMenu();
+        } else {
+            this.showMenu();
+        }
+    };
+    exports.hideMenu = function() {
+        this.button.className = "";
+        this.menu.style.display = 'none';
+        this.deemphesizeButton();
+    };
+    exports.showMenu = function() {
+        this.button.className = "image-upside-down";
+        this.menu.style.display = 'block';
+        this.emphesizeButton();
+    };
+    exports.emphesizeButton = function() {
+        this.button.style.opacity = 1;
+    };
+    exports.deemphesizeButton = function() {
+        this.button.style.opacity = 0.5;
     };
     exports.addMenuItem = function(key, title) {
         var id = "menu_"+key;
@@ -39,7 +77,9 @@ define(["exports", "./apps"], function(exports, apps) {
         if (!item) {
             item = document.createElement("button");
             item.className = "btn btn-default btn-primary btn-block btn-lg entropy-menu-item";
-            item.addEventListener( 'mousedown', this.createSelectCallback(key).bind(this), false );
+            var callback = this.createSelectCallback(key).bind(this);
+            item.addEventListener('mousedown', callback);
+            item.addEventListener('touchstart', callback);
             this.menu.appendChild(item);
         }
         item.innerHTML = title;
@@ -48,7 +88,7 @@ define(["exports", "./apps"], function(exports, apps) {
         return function(event) {
             console.log("menu item selected");
             event.stopPropagation();
-            this.menu.style.display = 'none';
+            this.hideMenu();
             apps.runApp(appKey);
         }
     };

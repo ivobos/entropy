@@ -6,3 +6,15 @@ canvas { width: 100%; height: 100% }
 .entropy-menu-item {
     font-family: "Arial Rounded MT Bold", "Helvetica Rounded", Arial, sans-serif;
 }
+
+.image-upside-down {
+    behavior:url(-ms-transform.htc);
+    /* Firefox */
+    -moz-transform:rotate(180deg);
+    /* Safari and Chrome */
+    -webkit-transform:rotate(180deg);
+    /* Opera */
+    -o-transform:rotate(180deg);
+    /* IE9 */
+    -ms-transform:rotate(180deg);
+}

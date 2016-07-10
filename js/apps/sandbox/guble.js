@@ -5,8 +5,13 @@ define(['exports'], function(exports) {
         // position on top of ground and to side
         var bbox = new THREE.Box3().setFromObject(this.body);
         this.body.position.y = - bbox.min.y;
-        this.body.position.x = 3 * bbox.min.x;
-        this.body.position.z = 3 * bbox.min.z;
+        this.body.position.x = 35;
+        this.body.position.z = 35;
+        this.body.userData.velocity = new THREE.Vector3(0, 0, 0);
+        this.body.add(new THREE.AxisHelper( 1 ));
+    };
+    exports.getPhysicsData = function() {
+        return [this.body];
     };
     exports.getRenderData = function () {
         this.skeleton.update();
@@ -16,6 +21,31 @@ define(['exports'], function(exports) {
         var time = Date.now() * 0.001;
         this.body.rotation.y = time / 2;
         this.body.skeleton.bones[1].rotation.x = Math.sin(time) / 5;
+        var body = this.body;
+        // calculate acceleration
+        var acceleration = new THREE.Vector3();
+        var forward = new THREE.Vector3(0, 0, 1);
+        forward.applyQuaternion(body.getWorldQuaternion());
+        // if close origin
+        if (body.position.lengthSq() < 80) {
+            // move away from origin when facing away
+            if (forward.dot(body.position) > 0) {
+                forward.multiplyScalar(0.001);
+                acceleration.add(forward);
+            }
+        } else { // otherwise we must be far from origin
+            // move towards origin when facing inward
+            if (forward.dot(body.position) < 0) {
+                forward.multiplyScalar(0.001);
+                acceleration.add(forward);
+            }
+        }
+        // deceleration due to friction/air drag
+        var dragAccel = this.body.userData.velocity.clone().multiplyScalar(-0.01);
+        acceleration.add(dragAccel);
+        acceleration.y = 0;
+        this.body.userData.acceleration = acceleration;
+
 //        this.body.skeleton.bones[1].rotation.y = Math.sin(time);
 //        this.body.skeleton.bones[1].rotation.y = Math.cos(time);
 //        this.body.position.x = - 3 +  Math.sin(time);
@@ -30,7 +60,7 @@ define(['exports'], function(exports) {
         var bone_rightshoulder = 1;
         var bone_rightfoot = 2;
 
-        var geometry = new THREE.BoxGeometry(body_len, body_height, body_width, 1, 1, 1 );
+        var geometry = new THREE.BoxGeometry(body_width, body_height, body_len, 1, 1, 1 );
         for ( var i = 0; i < geometry.vertices.length; i ++ ) {
             console.log("vertex "+ i + ",x="+geometry.vertices[i].x+",y="+geometry.vertices[i].y+",z="+geometry.vertices[i].z);
         }
@@ -66,12 +96,12 @@ define(['exports'], function(exports) {
         var rightTexture = new THREE.TextureLoader().load('img/sandbox/guble/sprite_3.png');
         var bottomTexture = new THREE.TextureLoader().load('img/sandbox/guble/sprite_4.png');
         var materials = [
-            new THREE.MeshLambertMaterial({ map: frontTexture, skinning: true }),
-            new THREE.MeshLambertMaterial({ map: backTexture, skinning: true }),
+            new THREE.MeshLambertMaterial({ map: leftTexture, skinning: true }),
+            new THREE.MeshLambertMaterial({ map: rightTexture, skinning: true }),
             new THREE.MeshLambertMaterial({ map: topTexture, skinning: true }),
             new THREE.MeshLambertMaterial({ map: bottomTexture, skinning: true }),
-            new THREE.MeshLambertMaterial({ map: rightTexture, skinning: true }),
-            new THREE.MeshLambertMaterial({ map: leftTexture, skinning: true }),
+            new THREE.MeshLambertMaterial({ map: frontTexture, skinning: true }),
+            new THREE.MeshLambertMaterial({ map: backTexture, skinning: true }),
         ];
         var material = new THREE.MeshFaceMaterial(materials);
         //var material = new THREE.MeshPhongMaterial( {

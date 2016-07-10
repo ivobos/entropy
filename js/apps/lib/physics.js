@@ -5,6 +5,10 @@ define(['exports'], function(exports) {
             var position = data[i].position;
             var velocity = data[i].userData.velocity;
             if (velocity) {
+                var acceleration = data[i].userData.acceleration;
+                if (acceleration) {
+                    velocity.add(acceleration);
+                }
                 position.add(velocity);
             }
             var aabb = data[i].userData.aabb;

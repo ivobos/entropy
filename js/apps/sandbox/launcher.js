@@ -13,6 +13,7 @@ define(["exports"], function(exports) {
             "apps/lib/camshake": {enabled: true},
             "apps/lib/pointer": {enabled: true},
             "apps/lib/material_ui": {enabled: true},
+            "apps/lib/physics": {enabled: true},
             "apps/sandbox/grip": {enabled: true},
             "apps/sandbox/ground": {enabled: true},
             "apps/sandbox/slinky": {enabled: true},

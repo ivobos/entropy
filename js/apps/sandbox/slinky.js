@@ -4,8 +4,8 @@ define(['exports'], function(exports) {
         // position on top of ground and to side
         var bbox = new THREE.Box3().setFromObject(this.mesh);
         this.mesh.position.y = -bbox.min.y;
-        this.mesh.position.x = - 3 * bbox.min.x;
-        this.mesh.position.z = 3 * bbox.min.z;
+        this.mesh.position.x = 0; // - 3 * bbox.min.x;
+        this.mesh.position.z = 0; // 3 * bbox.min.z;
         this.skeleton = new THREE.SkeletonHelper(this.mesh);
 
     };
@@ -14,6 +14,10 @@ define(['exports'], function(exports) {
         for ( var i = 0; i < this.mesh.skeleton.bones.length; i ++ ) {
             this.mesh.skeleton.bones[ i ].rotation.z = Math.sin( time ) * 3 / this.mesh.skeleton.bones.length;
         }
+        this.mesh.rotation.y = time / 2;
+    };
+    exports.getPhysicsData = function() {
+        return [this.mesh];
     };
     exports.getRenderData = function() {
         this.skeleton.update();

@@ -1,11 +1,11 @@
 requirejs.config({
     // bust browser caching, see http://stackoverflow.com/questions/8315088/prevent-requirejs-from-caching-required-scripts
-    urlArgs: "bust=v0.0.7"
+    urlArgs: "bust=v0.0.8"
 });
 requirejs(['kernel/lib/three', 'kernel/modules'], function(three, modules) {
     var appKey = "kernel";
     var moduleConfig = {
-        "kernel/stats" : { enabled: false},
+        "kernel/stats" : { enabled: true},
         "kernel/modules_ui" : { enabled: true},
         "kernel/apps" : { enabled: true},
         "kernel/menu" : { enabled: true},

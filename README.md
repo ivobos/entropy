@@ -1,1 +1,1 @@
-Trying to make this work on entropy.ivobos.com
+View in your browser at https://ivobos.com/entropy/
